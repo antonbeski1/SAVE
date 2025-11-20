@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/help-model-rollback.ts';
+import '@/ai/flows/quickstart-risk-model.ts';
+import '@/ai/flows/suggest-model-updates.ts';
