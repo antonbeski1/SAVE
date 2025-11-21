@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Waves } from 'lucide-react';
+import { LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,8 @@ export default function LoginPage() {
       <Card className="mx-auto max-w-sm">
         <CardHeader className="text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
-            <Waves className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">AlertWave</h1>
+            <LifeBuoy className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">SAVE</h1>
           </div>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
           <CardDescription>Enter your email below to receive a one-time password</CardDescription>

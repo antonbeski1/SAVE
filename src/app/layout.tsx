@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'AlertWave',
-  description: 'A proactive alert system for natural hazards.',
+  title: 'SAVE',
+  description: 'SAVE - A proactive alert system for natural hazards.',
 };
 
 export default function RootLayout({

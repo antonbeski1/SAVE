@@ -32,7 +32,7 @@ export default function AutomationPage() {
         <CardHeader>
           <CardTitle>Scheduled Jobs</CardTitle>
           <CardDescription>
-            This table outlines the automated data ingestion and processing jobs that run on the backend to power the AlertWave platform.
+            This table outlines the automated data ingestion and processing jobs that run on the backend to power the SAVE platform.
           </CardDescription>
         </CardHeader>
         <CardContent>

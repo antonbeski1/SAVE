@@ -94,7 +94,7 @@ const analyzeRiskFlow = ai.defineFlow(
     const eonetContext = JSON.stringify(nearbyEvents, null, 2);
 
     // 3. Define the prompt with the fetched data
-    const prompt = `You are a sophisticated environmental risk assessment AI for the AlertWave platform. Your task is to analyze the provided data for a specific location and determine the risk level for Wildfire, Heatwave, Flood, and Landslide.
+    const prompt = `You are a sophisticated environmental risk assessment AI for the SAVE platform. Your task is to analyze the provided data for a specific location and determine the risk level for Wildfire, Heatwave, Flood, and Landslide.
 
     **Location:**
     - Latitude: ${latitude}
