@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeRisk, type AnalyzeRiskInput, type AnalyzeRiskOutput } from '@/ai/flows/analyze-risk';
-import { AlertTriangle, Flame, Loader2, Mountain, Sun, Waves } from 'lucide-react';
+import { Flame, Loader2, Mountain, ShieldAlert, Sun, Waves } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { villages, type Village } from '@/lib/data';
+import { villages } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function getRiskBadgeVariant(level: AnalyzeRiskOutput['wildfire']['level'] | undefined) {
