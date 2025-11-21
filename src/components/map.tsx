@@ -62,8 +62,8 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
 
-  const apiKey = process.env.NEXT_PUBLIC_NASA_API_KEY || '';
-  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg?api_key=${apiKey}`;
+  // Use a relative path to our backend proxy. The API key is handled on the server.
+  const tileUrl = `/api/gibs/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg`;
 
   React.useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -101,7 +101,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
       });
     });
 
-  }, [lng, lat, zoom, opacity, selectedDate, tileUrl]);
+  }, [lng, lat, zoom, tileUrl]); // Removed dependencies that are now handled by other effects
 
   React.useEffect(() => {
     if (!map.current?.isStyleLoaded()) return;
@@ -199,7 +199,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     });
 
 
-  }, [eonetEvents, firmsEvents, opacity, selectedDate, selectedLayer]);
+  }, [eonetEvents, firmsEvents]);
 
   return (
     <div className="relative">
