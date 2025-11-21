@@ -74,3 +74,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mapbox GL custom styles */
+.mapboxgl-popup-content {
+  @apply bg-popover text-popover-foreground rounded-lg shadow-md p-2;
+}
+
+.mapboxgl-popup-close-button {
+  @apply text-popover-foreground;
+}
