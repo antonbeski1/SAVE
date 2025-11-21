@@ -10,3 +10,4 @@ import '@/ai/flows/fetch-power-data.ts';
 import '@/ai/flows/analyze-risk.ts';
 import '@/ai/flows/fetch-earth-imagery.ts';
 import '@/ai/tools/get-gibs-tile.ts';
+import '@/ai/tools/submit-harmony-job.ts';
