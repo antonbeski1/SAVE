@@ -38,7 +38,7 @@ export async function analyzeRisk(input: AnalyzeRiskInput): Promise<AnalyzeRiskO
 }
 
 // Helper function to find nearest events and stringify them for the prompt
-const getNearbyData = (lat: number, lon: number, items: any[], coordFields: {lat: string, lon: string}, maxDistanceKm: number, maxItems: number) => {
+const getNearbyData = (lat: number, lon: number, items: any[], getCoords: (item: any) => [number, number] | null, maxDistanceKm: number, maxItems: number) => {
     const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const R = 6371; // Earth radius in km
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -51,11 +51,16 @@ const getNearbyData = (lat: number, lon: number, items: any[], coordFields: {lat
     };
 
     return items
-        .map(item => ({
-            ...item,
-            distance: haversineDistance(lat, lon, item[coordFields.lat], item[coordFields.lon])
-        }))
-        .filter(item => item.distance <= maxDistanceKm)
+        .map(item => {
+            const coords = getCoords(item);
+            if (!coords) return null;
+            const [itemLon, itemLat] = coords;
+            return {
+                ...item,
+                distance: haversineDistance(lat, lon, itemLat, itemLon)
+            };
+        })
+        .filter((item): item is (typeof items[0] & { distance: number }) => item !== null && item.distance <= maxDistanceKm)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, maxItems);
 }
@@ -76,12 +81,12 @@ const analyzeRiskFlow = ai.defineFlow(
     ]);
 
     // 2. Pre-process data to find relevant events
-    const nearbyFires = getNearbyData(latitude, longitude, firmsData.firePoints, {lat: 'latitude', lon: 'longitude'}, 200, 10);
-    const nearbyEvents = getNearbyData(latitude, longitude, eonetData.events, {lat: 'coordinates.1', lon: 'coordinates.0'}, 500, 10).map(e => ({
-        ...e, 
-        // EONET gives [lon, lat], so we need to access them by index
-        coordinates: e.geometry.coordinates 
-    }));
+    const nearbyFires = getNearbyData(latitude, longitude, firmsData.firePoints, (item) => [item.longitude, item.latitude], 200, 10);
+    
+    const nearbyEvents = getNearbyData(latitude, longitude, eonetData.events, (item) => {
+        const point = item.geometry.find(g => g.type === 'Point');
+        return point ? (point.coordinates as [number, number]) : null;
+    }, 500, 10);
 
     // Stringify for the prompt context
     const powerContext = JSON.stringify(powerData.data.slice(-24), null, 2); // Last 24 hours
@@ -102,23 +107,23 @@ const analyzeRiskFlow = ai.defineFlow(
         ${powerContext}
         \`\`\`
 
-    2.  **NASA FIRMS (Fire Information - Nearby Active Fires in last 24h):** This shows active fires within a 200km radius. The presence of nearby fires significantly increases wildfire risk. Note 'brightness' (temperature in Kelvin) and 'confidence'.
+    2.  **NASA FIRMS (Fire Information - Nearby Active Fires in last 24h):** This shows active fires within a 200km radius. The presence of nearby fires significantly increases wildfire risk. Note 'brightness' (temperature in Kelvin), 'confidence', and 'distance' (in km).
         \`\`\`json
         ${firmsContext}
         \`\`\`
 
-    3.  **NASA EONET (Natural Events - Nearby in last 24h):** This lists major natural events within a 500km radius. Pay attention to categories like 'Severe Storms' (flood/landslide risk), 'Wildfires', and 'Floods'.
+    3.  **NASA EONET (Natural Events - Nearby in last 24h):** This lists major natural events within a 500km radius. Proximity (see 'distance' in km) and category are critical for risk correlation. Pay close attention to categories like 'Severe Storms' (flood/landslide risk), 'Wildfires', and 'Floods'. The presence and proximity of these events directly influence the risk scores.
         \`\`\`json
         ${eonetContext}
         \`\`\`
 
     **Analysis Task:**
-    Based *only* on the data provided, assess the risk for each of the following hazards. For each hazard, you must provide a risk level ('Low', 'Medium', 'High', 'Very High') and a concise reasoning.
+    Based *only* on the data provided, assess the risk for each of the following hazards. For each hazard, you must provide a risk level ('Low', 'Medium', 'High', 'Very High') and a concise reasoning that references the data sources and proximity of events.
     
-    -   **Wildfire Risk:** Consider high temperatures, low humidity, high wind speeds, and especially the presence of nearby FIRMS fire points.
-    -   **Heatwave Risk:** Focus on sustained high temperatures from the POWER data. A heatwave is a period of excessively hot weather.
-    -   **Flood Risk:** Look for 'Severe Storms' or 'Floods' in EONET data. POWER data alone is insufficient for flood risk without precipitation, but you can infer risk from major storm systems.
-    -   **Landslide Risk:** Look for 'Severe Storms' in EONET data, which can trigger landslides. This risk is higher in areas with varied topography, but make your assessment based on the available data.
+    -   **Wildfire Risk:** Consider high temperatures, low humidity, high wind speeds, and especially the presence and proximity of nearby FIRMS fire points.
+    -   **Heatwave Risk:** Focus on sustained high temperatures from the POWER data. Consider if any 'TemperatureExtremes' events are nearby in the EONET data.
+    -   **Flood Risk:** Look for 'Severe Storms' or 'Floods' in EONET data. Proximity is key. POWER data alone is insufficient for flood risk without precipitation, but you can infer risk from major storm systems.
+    -   **Landslide Risk:** Look for 'Severe Storms' or 'Landslides' in EONET data, which can trigger landslides. This risk is higher in areas with varied topography, but make your assessment based on the available data, particularly event proximity.
 
     Provide your output in the required JSON format with no extra commentary.`;
 
