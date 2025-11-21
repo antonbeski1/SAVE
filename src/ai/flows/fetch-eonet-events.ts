@@ -20,7 +20,7 @@ const EonetEventSchema = z.object({
     magnitudeUnit: z.string().optional(),
     date: z.string(),
     type: z.string(),
-    coordinates: z.array(z.number()),
+    coordinates: z.any(), // Allow for various geometry types (Point, Polygon, etc.)
   })),
 });
 
@@ -42,7 +42,7 @@ const fetchEonetEventsFlow = ai.defineFlow(
   },
   async () => {
     try {
-      // Fetch events from the last 24 hours
+      // Fetch open events from the last 24 hours
       const response = await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=1&limit=999');
       if (!response.ok) {
         throw new Error(`Failed to fetch EONET events: ${response.statusText}`);
@@ -50,26 +50,37 @@ const fetchEonetEventsFlow = ai.defineFlow(
       const data = await response.json();
 
       const events = data.events.map((event: any) => {
-        // Filter out geometries that are not points for simplicity in some uses
-        const pointGeometries = event.geometry.filter((geom: any) => geom.type === 'Point');
+        // Find the first point geometry if available
+        let pointGeometry = event.geometry.find((geom: any) => geom.type === 'Point');
 
-        // If there are no point geometries, we might not be able to use this event, but we'll keep it for now
-        if (pointGeometries.length === 0 && event.geometry.length > 0) {
-             // Let's create a pseudo-point from the first coordinate of the first geometry (e.g., a polygon)
-             // This is a simplification but makes it usable.
-             const pseudoPoint = {
-                 date: event.geometry[0].date,
+        // If no point geometry, create a pseudo-point from the first coordinate of the first geometry (e.g., a polygon)
+        // This is a simplification but makes it usable for map markers.
+        if (!pointGeometry && event.geometry.length > 0 && event.geometry[0].coordinates) {
+          const firstGeom = event.geometry[0];
+          let representativeCoord;
+          
+          if (firstGeom.type === 'Polygon' && Array.isArray(firstGeom.coordinates[0][0])) {
+            representativeCoord = firstGeom.coordinates[0][0]; // First vertex of the polygon
+          } else if (firstGeom.type === 'LineString' && Array.isArray(firstGeom.coordinates[0])) {
+            representativeCoord = firstGeom.coordinates[0]; // First point of the line
+          }
+
+          if (representativeCoord) {
+             pointGeometry = {
+                 date: firstGeom.date,
                  type: 'Point',
-                 coordinates: event.geometry[0].coordinates[0][0] // Taking a coordinate from a polygon
+                 coordinates: representativeCoord
              };
-             event.geometry.push(pseudoPoint);
+             // Add this pseudo-point to the geometries array for consistency
+             event.geometry.push(pointGeometry);
+          }
         }
-
+        
         return {
             id: event.id,
             title: event.title,
             category: event.categories[0]?.title || 'Unknown',
-            geometry: event.geometry,
+            geometry: event.geometry, // Return all geometries
         };
       }).filter((e: any): e is z.infer<typeof EonetEventSchema> => e !== null);
 

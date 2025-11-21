@@ -17,10 +17,11 @@ const EONET_CATEGORY_COLORS: Record<string, string> = {
   'Water Color': '#1E90FF',
   'Sea and Lake Ice': '#00BFFF',
   'Severe Storms': '#8A2BE2',
+  Floods: '#0000FF',
+  Landslides: '#A0522D',
   default: '#808080',
 };
 
-// As per plan step 1.1
 const GIBS_LAYERS = [
     { id: 'MODIS_Terra_CorrectedReflectance_TrueColor', name: 'True Color (Terra)' },
     { id: 'VIIRS_SNPP_CorrectedReflectance_TrueColor', name: 'True Color (VIIRS)' },
@@ -55,7 +56,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
 
-  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/250m/{z}/{y}/{x}.jpg`;
+  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg`;
 
   React.useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -127,16 +128,18 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     eonetEvents.features.forEach(feature => {
       if (feature.geometry.type === 'Point') {
         const { coordinates } = feature.geometry;
-        const { title, category } = feature.properties as { title: string; category: string };
+        const props = feature.properties as { title: string; category: string, date: string };
 
         const el = document.createElement('div');
-        el.className = 'w-3 h-3 rounded-full border-2 border-white/70 shadow-lg';
-        el.style.backgroundColor = getEventCategoryColor(category);
+        el.className = 'w-3 h-3 rounded-full border-2 border-white/70 shadow-lg cursor-pointer';
+        el.style.backgroundColor = getEventCategoryColor(props.category);
+        el.title = props.title;
 
         const popup = new Popup({ offset: 25, className: 'mapbox-popup-custom' }).setHTML(
           `<div>
-            <h3 class="font-bold">${title}</h3>
-            <p class="text-sm text-muted-foreground">${category}</p>
+            <h3 class="font-bold text-base">${props.title}</h3>
+            <p class="text-sm"><span class="font-semibold">Category:</span> ${props.category}</p>
+            ${props.date ? `<p class="text-xs text-muted-foreground">Date: ${new Date(props.date).toLocaleDateString()}</p>` : ''}
           </div>`
         );
 
@@ -225,5 +228,3 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     </div>
   );
 }
-
-    

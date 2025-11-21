@@ -1,7 +1,7 @@
 import { AppLayout } from '@/components/app-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { villages } from '@/lib/data';
-import { AlertTriangle, ShieldCheck, Flame } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Flame, Globe } from 'lucide-react';
 import { fetchEonetEvents } from '@/ai/flows/fetch-eonet-events';
 import { fetchFirmsData } from '@/ai/flows/fetch-firms-data';
 import Map from '@/components/map';
@@ -29,12 +29,13 @@ export default async function DashboardPage() {
             type: 'Feature',
             geometry: {
                 type: 'Point',
-                coordinates: pointGeometry.coordinates,
+                coordinates: pointGeometry.coordinates as [number, number],
             },
             properties: {
                 id: event.id,
                 title: event.title,
                 category: event.category,
+                date: pointGeometry.date,
             },
         }
     }).filter(feature => feature !== null) as FeatureCollection['features'],
@@ -85,7 +86,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">NASA EONET Events (24h)</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <Globe className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{events.length}</div>
