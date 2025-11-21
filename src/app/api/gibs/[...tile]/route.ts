@@ -1,7 +1,6 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
-// /api/gibs/{layer}/{date}/{resolution}/{z}/{y}/{x}.{format}
+// /api/gibs/{layer}/default/{date}/{resolution}/{z}/{y}/{x}.{format}
 export async function GET(
   req: NextRequest,
   { params }: { params: { tile: string[] } }
@@ -12,10 +11,11 @@ export async function GET(
   }
 
   const tilePath = params.tile.join('/');
-  const gibsUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${tilePath}?api_key=${apiKey}`;
+  const gibsUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${tilePath}`;
 
   try {
-    const nasaResponse = await fetch(gibsUrl, {
+    // IMPORTANT: The API key must be sent as a query parameter for GIBS WMTS
+    const nasaResponse = await fetch(`${gibsUrl}?api_key=${apiKey}`, {
         next: { revalidate: 3600 * 24 } // Cache tiles for 24 hours
     });
 

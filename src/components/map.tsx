@@ -61,18 +61,18 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [opacity, setOpacity] = React.useState(0.8);
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
+  const [mapboxAccessToken, setMapboxAccessToken] = React.useState(process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN);
 
   // Use a relative path to our backend proxy. The API key is handled on the server.
   const tileUrl = `/api/gibs/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg`;
 
   React.useEffect(() => {
     if (map.current || !mapContainer.current) return;
-
-    const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+    
     if (!mapboxAccessToken || mapboxAccessToken === "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
-        console.error("Mapbox access token is not set. Please add it to your .env file.");
+        console.error("Mapbox access token is not set. Please add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to your .env file.");
         if(mapContainer.current) {
-          mapContainer.current.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-muted-foreground/10 text-muted-foreground">Please set your Mapbox access token in the .env file.</div>`;
+          mapContainer.current.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-muted-foreground/10 text-muted-foreground">Please set your Mapbox access token in the .env file to load the map.</div>`;
         }
         return;
     }
@@ -101,7 +101,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
       });
     });
 
-  }, [lng, lat, zoom, tileUrl]); // Removed dependencies that are now handled by other effects
+  }, [lng, lat, zoom, mapboxAccessToken]); // Only run once on mount
 
   React.useEffect(() => {
     if (!map.current?.isStyleLoaded()) return;

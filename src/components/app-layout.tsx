@@ -38,7 +38,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { Input } from './ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const navItems = [
@@ -57,80 +56,6 @@ const navItems = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
-  const desktopNav = (
-    <nav className="hidden flex-col gap-1.5 text-sm font-medium md:flex">
-      <Link
-        href="#"
-        className="group mb-2 flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary text-lg font-semibold text-primary-foreground md:h-12 md:justify-start md:px-4"
-      >
-        <Waves className="h-6 w-6 transition-all group-hover:scale-110" />
-        <span className="hidden md:block">AlertWave</span>
-      </Link>
-      <TooltipProvider>
-      {navItems.map((item) => (
-        <Tooltip key={item.href}>
-          <TooltipTrigger asChild>
-            <Link
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                pathname === item.href
-                  ? 'bg-muted text-primary'
-                  : 'text-muted-foreground'
-              }`}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="hidden md:block">{item.label}</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="md:hidden">
-            <p>{item.label}</p>
-          </TooltipContent>
-        </Tooltip>
-      ))}
-      </TooltipProvider>
-    </nav>
-  );
-
-  const mobileNav = (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="shrink-0 md:hidden"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle navigation menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col">
-        <nav className="grid gap-2 text-lg font-medium">
-          <Link
-            href="#"
-            className="group mb-4 flex items-center gap-2 text-lg font-semibold"
-          >
-            <Waves className="h-6 w-6 text-primary" />
-            <span>AlertWave</span>
-          </Link>
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 hover:text-foreground ${
-                pathname === item.href
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground'
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </SheetContent>
-    </Sheet>
-  );
 
   const userMenu = (
     <DropdownMenu>
@@ -170,22 +95,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <div className="flex-1 overflow-auto py-2">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === item.href
-                      ? 'bg-muted text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <TooltipProvider>
+              <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+                {navItems.map((item) => (
+                   <Tooltip key={item.href} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
+                          pathname === item.href
+                            ? 'bg-muted text-primary'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="hidden">
+                      <p>{item.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </nav>
+            </TooltipProvider>
           </div>
         </div>
       </div>
@@ -209,7 +142,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   className="mb-4 flex items-center gap-2 text-lg font-semibold"
                 >
                   <Waves className="h-6 w-6 text-primary" />
-                  <span className="sr-only">AlertWave</span>
+                  <span className="">AlertWave</span>
                 </Link>
                 {navItems.map((item) => (
                   <Link
