@@ -28,6 +28,7 @@ import {
   Target,
   Users,
   Waves,
+  Workflow,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -45,6 +46,7 @@ const navItems = [
   { href: '/alerts', icon: BellRing, label: 'Alerts' },
   { href: '/logs', icon: History, label: 'Event Logs' },
   { href: '/users', icon: Users, label: 'User Management' },
+  { href: '/automation', icon: Workflow, label: 'Automation' },
   { href: '/analyze-risk', icon: ShieldAlert, label: 'Risk Analysis' },
   { href: '/diagnostics', icon: HeartPulse, label: 'Data Diagnostics' },
   { href: '/overrides', icon: SlidersHorizontal, label: 'Manual Overrides' },
