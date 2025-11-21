@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-indigo-900 via-slate-900 to-stone-900">
+    <div className="flex min-h-screen w-full items-center justify-center bg-black">
       <Card className="mx-auto max-w-sm bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
