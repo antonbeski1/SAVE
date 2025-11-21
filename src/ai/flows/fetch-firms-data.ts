@@ -38,7 +38,8 @@ const fetchFirmsDataFlow = ai.defineFlow(
       return { firePoints: [] };
     }
 
-    const mapKey = 'VIIRS_NOAA20_NRT';
+    // API endpoint for VIIRS S-NPP NRT data for the whole world in the last 24 hours.
+    const mapKey = 'VIIRS_NOAA20_NRT'; 
     const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${apiKey}/${mapKey}/world/1`;
 
     try {
@@ -53,11 +54,11 @@ const fetchFirmsDataFlow = ai.defineFlow(
       // Find indices of required columns
       const latIndex = headers.indexOf('latitude');
       const lonIndex = headers.indexOf('longitude');
-      const brightnessIndex = headers.indexOf('bright_ti4'); // TI4 is brightness temp in Kelvin
+      const brightnessIndex = headers.indexOf('bright_ti4'); // TI4 is brightness temp in Kelvin for VIIRS
       const confidenceIndex = headers.indexOf('confidence');
 
       if (latIndex === -1 || lonIndex === -1 || brightnessIndex === -1 || confidenceIndex === -1) {
-          throw new Error('Required columns not found in FIRMS CSV data');
+          throw new Error('Required columns not found in FIRMS CSV data. Headers: ' + headers.join(', '));
       }
 
       const firePoints = lines.slice(1).map(line => {

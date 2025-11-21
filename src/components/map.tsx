@@ -19,6 +19,11 @@ const EONET_CATEGORY_COLORS: Record<string, string> = {
   'Severe Storms': '#8A2BE2',
   Floods: '#0000FF',
   Landslides: '#A0522D',
+  Drought: '#F4A460',
+  'Dust and Haze': '#BDB76B',
+  'Manmade': '#696969',
+  TemperatureExtremes: '#FFD700',
+  Snow: '#FFFAFA',
   default: '#808080',
 };
 
@@ -31,7 +36,8 @@ const GIBS_LAYERS = [
     { id: 'MODIS_Terra_Cloud_Top_Temperature_Day', name: 'Cloud Top Temperature' },
     { id: 'MODIS_Terra_Water_Mask', name: 'Flood Water Mask (MODIS)' },
     { id: 'VIIRS_SNPP_Flood_NRT', name: 'Flood Water NRT (VIIRS)'},
-    { id: 'MODIS_Terra_Active_Fires', name: 'Active Fires (MODIS)' },
+    { id: 'VIIRS_NOAA20_NRT_Fires_375m_Day', name: 'Fires (VIIRS, Day)' },
+    { id: 'VIIRS_NOAA20_NRT_Fires_375m_Night', name: 'Fires (VIIRS, Night)' },
 ];
 
 function getEventCategoryColor(category: string): string {
@@ -56,7 +62,8 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
 
-  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg`;
+  const apiKey = process.env.NEXT_PUBLIC_NASA_API_KEY || '';
+  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg?api_key=${apiKey}`;
 
   React.useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -137,7 +144,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
 
         const popup = new Popup({ offset: 25, className: 'mapbox-popup-custom' }).setHTML(
           `<div>
-            <h3 class="font-bold text-base">${props.title}</h3>
+            <h3 class="font-bold text-base flex items-center"><div class="w-2 h-2 rounded-full mr-2" style="background-color: ${getEventCategoryColor(props.category)}"></div>${props.title}</h3>
             <p class="text-sm"><span class="font-semibold">Category:</span> ${props.category}</p>
             ${props.date ? `<p class="text-xs text-muted-foreground">Date: ${new Date(props.date).toLocaleDateString()}</p>` : ''}
           </div>`
@@ -159,16 +166,26 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
         const { brightness, confidence } = feature.properties as { brightness: number; confidence: string };
 
         const el = document.createElement('div');
-        el.className = `w-2 h-2 rounded-full border border-white/50`;
-        const fireIntensity = (brightness - 300) / 200; // Normalize brightness
-        el.style.backgroundColor = `rgba(255, 0, 0, ${Math.max(0.4, fireIntensity)})`;
-        el.style.boxShadow = `0 0 4px rgba(255, 100, 0, ${Math.max(0.6, fireIntensity)})`;
+        
+        // Normalize brightness (Kelvin) to a 0-1 scale for styling.
+        // Typical wildfire brightness can be 300K (low) to over 500K (high).
+        const fireIntensity = Math.min(1, Math.max(0, (brightness - 300) / 200));
+
+        const size = 6 + fireIntensity * 10; // size from 6px to 16px
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.borderRadius = '50%';
+        el.style.backgroundColor = `hsl(15, 100%, ${60 - fireIntensity * 20}%)`; // Orange to bright red
+        el.style.border = '1px solid rgba(255, 255, 255, 0.5)';
+        el.style.boxShadow = `0 0 ${2 + fireIntensity * 6}px hsl(30, 100%, 50%)`;
+        el.style.opacity = (confidence === 'high' ? '1' : (confidence === 'nominal' ? '0.8' : '0.6'));
+        el.className = 'cursor-pointer';
 
         const popup = new Popup({ offset: 15, className: 'mapbox-popup-custom' }).setHTML(
           `<div>
-            <h3 class="font-bold">Active Fire</h3>
-            <p class="text-sm text-muted-foreground">Brightness: ${brightness}K</p>
-            <p class="text-sm text-muted-foreground">Confidence: ${confidence}</p>
+            <h3 class="font-bold text-base text-red-400">Active Fire</h3>
+            <p class="text-sm"><span class="font-semibold">Brightness:</span> ${brightness.toFixed(0)}K</p>
+            <p class="text-sm"><span class="font-semibold">Confidence:</span> ${confidence}</p>
           </div>`
         );
 
