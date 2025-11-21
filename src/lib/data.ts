@@ -3,16 +3,17 @@ export type Village = {
   name: string;
   riskLevel: 'Low' | 'Medium' | 'High';
   alertStatus: 'Sent' | 'Paused' | 'Inactive';
+  coords: { lat: number; lon: number };
 };
 
 export const villages: Village[] = [
-  { id: 'v001', name: 'Riverside', riskLevel: 'High', alertStatus: 'Sent' },
-  { id: 'v002', name: 'Hillview', riskLevel: 'Medium', alertStatus: 'Sent' },
-  { id: 'v003', name: 'Greenfield', riskLevel: 'Low', alertStatus: 'Inactive' },
-  { id: 'v004', name: 'Laketown', riskLevel: 'High', alertStatus: 'Paused' },
-  { id: 'v005', name: 'Sunnyside', riskLevel: 'Low', alertStatus: 'Inactive' },
-  { id: 'v006', name: 'Mountain Base', riskLevel: 'Medium', alertStatus: 'Sent' },
-  { id: 'v007', name: 'Coastal Point', riskLevel: 'Low', alertStatus: 'Inactive' },
+  { id: 'v001', name: 'Riverside', riskLevel: 'High', alertStatus: 'Sent', coords: { lat: 34.0522, lon: -118.2437 } },
+  { id: 'v002', name: 'Hillview', riskLevel: 'Medium', alertStatus: 'Sent', coords: { lat: 40.7128, lon: -74.0060 } },
+  { id: 'v003', name: 'Greenfield', riskLevel: 'Low', alertStatus: 'Inactive', coords: { lat: 35.6895, lon: 139.6917 } },
+  { id: 'v004', name: 'Laketown', riskLevel: 'High', alertStatus: 'Paused', coords: { lat: -33.8688, lon: 151.2093 } },
+  { id: 'v005', name: 'Sunnyside', riskLevel: 'Low', alertStatus: 'Inactive', coords: { lat: 19.4326, lon: -99.1332 } },
+  { id: 'v006', name: 'Mountain Base', riskLevel: 'Medium', alertStatus: 'Sent', coords: { lat: 48.8566, lon: 2.3522 } },
+  { id: 'v007', name: 'Coastal Point', riskLevel: 'Low', alertStatus: 'Inactive', coords: { lat: -22.9068, lon: -43.1729 } },
 ];
 
 export type EventLog = {
@@ -26,7 +27,7 @@ export type EventLog = {
 
 export const eventLogs: EventLog[] = [
   { id: 'e001', timestamp: new Date('2024-07-21T14:30:00Z'), village: 'Riverside', hazard: 'Flood', riskScore: 0.85, alertSent: true },
-  { id: 'e002', timestamp: new Date('2024-07-21T13:05:00Z'), village: 'Hillview', hazard: 'Landslide', riskScore: 0.65, alertSent: true },
+  { id: 'e002', timestamp: new date('2024-07-21T13:05:00Z'), village: 'Hillview', hazard: 'Landslide', riskScore: 0.65, alertSent: true },
   { id: 'e003', timestamp: new Date('2024-07-21T11:00:00Z'), village: 'Laketown', hazard: 'Flood', riskScore: 0.92, alertSent: false },
   { id: 'e004', timestamp: new Date('2024-07-20T18:00:00Z'), village: 'Sunnyside', hazard: 'Heatwave', riskScore: 0.78, alertSent: true },
   { id: 'e005', timestamp: new Date('2024-07-20T16:45:00Z'), village: 'Mountain Base', hazard: 'Landslide', riskScore: 0.55, alertSent: true },
@@ -41,7 +42,7 @@ export type UserGroup = {
 
 export const userGroups: UserGroup[] = [
   { id: 'ug01', name: 'Northern District', villageCount: 12, hazards: ['Flood', 'Landslide'] },
-  { id:g 'ug02', name: 'Coastal Alliance', villageCount: 8, hazards: ['Flood', 'Heatwave'] },
+  { id: 'ug02', name: 'Coastal Alliance', villageCount: 8, hazards: ['Flood', 'Heatwave'] },
   { id: 'ug03', name: 'Highlands Watch', villageCount: 5, hazards: ['Landslide'] },
   { id: 'ug04', name: 'Southern Plains', villageCount: 22, hazards: ['Heatwave', 'Flood'] },
 ];
