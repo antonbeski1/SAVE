@@ -16,7 +16,7 @@ export default function LoginPage() {
             <LifeBuoy className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold">SAVE</h1>
           </div>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>Enter your email below to receive a one-time password</CardDescription>
         </CardHeader>
         <CardContent>
