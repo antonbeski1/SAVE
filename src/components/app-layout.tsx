@@ -23,6 +23,7 @@ import {
   LogOut,
   Menu,
   Package,
+  ShieldAlert,
   SlidersHorizontal,
   Target,
   Users,
@@ -44,6 +45,7 @@ const navItems = [
   { href: '/alerts', icon: BellRing, label: 'Alerts' },
   { href: '/logs', icon: History, label: 'Event Logs' },
   { href: '/users', icon: Users, label: 'User Management' },
+  { href: '/analyze-risk', icon: ShieldAlert, label: 'Risk Analysis' },
   { href: '/diagnostics', icon: HeartPulse, label: 'Data Diagnostics' },
   { href: '/overrides', icon: SlidersHorizontal, label: 'Manual Overrides' },
   { href: '/ground-truth', icon: Target, label: 'Ground Truth' },
@@ -165,7 +167,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="">AlertWave</span>
             </Link>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 overflow-auto py-2">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {navItems.map((item) => (
                 <Link

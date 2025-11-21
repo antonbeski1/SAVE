@@ -1,5 +1,5 @@
 import { AppLayout } from '@/components/app-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { villages } from '@/lib/data';
 import { AlertTriangle, ShieldCheck, Flame } from 'lucide-react';
 import { fetchEonetEvents } from '@/ai/flows/fetch-eonet-events';
@@ -17,18 +17,27 @@ export default async function DashboardPage() {
   // Convert EONET events to GeoJSON format for the map
   const eonetGeoJson: FeatureCollection = {
     type: 'FeatureCollection',
-    features: events.map(event => ({
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: event.coordinates,
-      },
-      properties: {
-        id: event.id,
-        title: event.title,
-        category: event.category,
-      },
-    })),
+    features: events.map(event => {
+        // Find the first point geometry in the event
+        const pointGeometry = event.geometry.find((geom: any) => geom.type === 'Point');
+        
+        if (!pointGeometry) {
+            return null; // Skip events without a point geometry for map display
+        }
+        
+        return {
+            type: 'Feature',
+            geometry: {
+                type: 'Point',
+                coordinates: pointGeometry.coordinates,
+            },
+            properties: {
+                id: event.id,
+                title: event.title,
+                category: event.category,
+            },
+        }
+    }).filter(feature => feature !== null) as FeatureCollection['features'],
   };
 
   const firmsGeoJson: FeatureCollection = {
@@ -75,7 +84,7 @@ export default async function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">NASA EONET Events</CardTitle>
+            <CardTitle className="text-sm font-medium">NASA EONET Events (24h)</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -98,10 +107,10 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle>Global Risk Map</CardTitle>
           <CardDescription>Live hazard data from NASA EONET and FIRMS, with satellite imagery from GIBS.</CardDescription>
-          <CardContent className="p-0">
+        </CardHeader>
+         <CardContent className="p-0">
             <Map eonetEvents={eonetGeoJson} firmsEvents={firmsGeoJson} />
           </CardContent>
-        </CardHeader>
       </Card>
     </AppLayout>
   );
