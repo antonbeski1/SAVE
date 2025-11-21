@@ -10,6 +10,8 @@ import { Slider } from './ui/slider';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays } from 'date-fns';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { TriangleAlert } from 'lucide-react';
 
 const EONET_CATEGORY_COLORS: Record<string, string> = {
   Wildfires: '#FF4500',
@@ -61,7 +63,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [opacity, setOpacity] = React.useState(0.8);
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
-  const [mapboxAccessToken, setMapboxAccessToken] = React.useState(process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN);
+  const [mapboxAccessToken] = React.useState(process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN);
 
   // Use a relative path to our backend proxy. The API key is handled on the server.
   const tileUrl = `/api/gibs/${selectedLayer}/default/${selectedDate}/500m/{z}/{y}/{x}.jpg`;
@@ -70,10 +72,6 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     if (map.current || !mapContainer.current) return;
     
     if (!mapboxAccessToken || mapboxAccessToken === "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
-        console.error("Mapbox access token is not set. Please add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to your .env file.");
-        if(mapContainer.current) {
-          mapContainer.current.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-muted-foreground/10 text-muted-foreground">Please set your Mapbox access token in the .env file to load the map.</div>`;
-        }
         return;
     }
     mapboxgl.accessToken = mapboxAccessToken;
@@ -101,7 +99,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
       });
     });
 
-  }, [lng, lat, zoom, mapboxAccessToken]); // Only run once on mount
+  }, [lng, lat, zoom, mapboxAccessToken, tileUrl, opacity]); 
 
   React.useEffect(() => {
     if (!map.current?.isStyleLoaded()) return;
@@ -200,6 +198,23 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
 
 
   }, [eonetEvents, firmsEvents]);
+
+  if (!mapboxAccessToken || mapboxAccessToken === "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
+      return (
+          <div className="w-full h-[65vh] rounded-lg bg-muted flex items-center justify-center p-4">
+              <Alert variant="destructive" className="max-w-md">
+                <TriangleAlert className="h-4 w-4" />
+                <AlertTitle>Map Configuration Error</AlertTitle>
+                <AlertDescription>
+                    Please set your Mapbox access token in a <code>.env.local</code> file to load the map.
+                    <pre className="mt-2 p-2 bg-background/50 rounded-md text-xs">
+                        NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=...
+                    </pre>
+                </AlertDescription>
+              </Alert>
+          </div>
+      )
+  }
 
   return (
     <div className="relative">
