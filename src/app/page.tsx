@@ -9,8 +9,8 @@ import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
-      <Card className="mx-auto max-w-sm">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-indigo-900 via-slate-900 to-stone-900">
+      <Card className="mx-auto max-w-sm bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
             <LifeBuoy className="h-8 w-8 text-primary" />
@@ -23,14 +23,14 @@ export default function LoginPage() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required />
+              <Input id="email" type="email" placeholder="m@example.com" required className="bg-transparent placeholder:text-gray-400" />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="otp">One-Time Password</Label>
               </div>
               <div className="flex gap-2">
-                <Input id="otp" required />
+                <Input id="otp" required className="bg-transparent placeholder:text-gray-400"/>
                 <Button variant="outline">Send OTP</Button>
               </div>
             </div>

@@ -103,3 +103,8 @@
   @apply text-blue-300;
 }
 
+@layer components {
+  .bg-card {
+    background-color: hsl(var(--card));
+  }
+}
