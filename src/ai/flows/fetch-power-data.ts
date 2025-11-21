@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Fetches weather data from the NASA POWER API for a specific location.
- * - fetchPowerData - Fetches hourly temperature, humidity, and wind speed.
+ * - fetchPowerData - Fetches hourly temperature, humidity, wind speed, and solar radiation.
  * - FetchPowerDataInput - The input type for the fetchPowerData function.
  * - FetchPowerDataOutput - The return type for the fetchPowerData function.
  */
@@ -25,6 +25,7 @@ const PowerDataPointSchema = z.object({
   T2M: z.number().describe('Temperature at 2 Meters (C)'),
   RH2M: z.number().describe('Relative Humidity at 2 Meters (%)'),
   WS10M: z.number().describe('Wind Speed at 10 Meters (m/s)'),
+  ALLSKY_SFC_SW_DWN: z.number().describe('All Sky Insolation Incident on a Horizontal Surface (W/m^2)'),
 });
 
 const FetchPowerDataOutputSchema = z.object({
@@ -49,12 +50,13 @@ const fetchPowerDataFlow = ai.defineFlow(
     }
 
     const today = new Date();
+    // Fetch data for the last 24-48 hours to ensure we get a full 24-hour cycle
     const yesterday = sub(today, { days: 1 });
     const startDate = format(yesterday, 'yyyyMMdd');
     const endDate = format(today, 'yyyyMMdd');
 
     const params = new URLSearchParams({
-      parameters: 'T2M,RH2M,WS10M',
+      parameters: 'T2M,RH2M,WS10M,ALLSKY_SFC_SW_DWN',
       community: 'AG',
       longitude: longitude.toString(),
       latitude: latitude.toString(),
@@ -66,18 +68,22 @@ const fetchPowerDataFlow = ai.defineFlow(
     const url = `https://power.larc.nasa.gov/api/temporal/hourly/point?${params.toString()}`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to fetch NASA POWER data: ${response.statusText} - ${errorText}`);
       }
       const rawData = await response.json();
+      
+      if (!rawData.properties?.parameter) {
+          throw new Error('Invalid data structure received from NASA POWER API. "parameter" property is missing.');
+      }
 
-      // The POWER API returns data in a structured but nested format. We need to parse it.
       const properties = rawData.properties.parameter;
-      const timestamps = rawData.geometry.coordinates[2].times;
+      // Timestamps are in the geometry object
+      const timestamps = Object.keys(properties.T2M);
 
-      const data: z.infer<typeof PowerDataPointSchema>[] = timestamps.map((time: string, index: number) => {
+      const data: z.infer<typeof PowerDataPointSchema>[] = timestamps.map((time: string) => {
          const year = parseInt(time.substring(0, 4), 10);
          const month = parseInt(time.substring(4, 6), 10);
          const day = parseInt(time.substring(6, 8), 10);
@@ -88,9 +94,10 @@ const fetchPowerDataFlow = ai.defineFlow(
           month,
           day,
           hour,
-          T2M: properties.T2M[time],
-          RH2M: properties.RH2M[time],
-          WS10M: properties.WS10M[time],
+          T2M: properties.T2M?.[time] ?? -999, // Use -999 or another sentinel value for missing data
+          RH2M: properties.RH2M?.[time] ?? -999,
+          WS10M: properties.WS10M?.[time] ?? -999,
+          ALLSKY_SFC_SW_DWN: properties.ALLSKY_SFC_SW_DWN?.[time] ?? -999,
         };
       });
 
