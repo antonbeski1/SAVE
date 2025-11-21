@@ -34,6 +34,20 @@ function getRiskBadgeVariant(riskLevel: Village['riskLevel']) {
   }
 }
 
+function getStatusBadgeVariant(status: Village['alertStatus']) {
+    switch (status) {
+        case 'Sent':
+            return 'default';
+        case 'Paused':
+            return 'outline';
+        case 'Inactive':
+            return 'secondary';
+        default:
+            return 'secondary';
+    }
+}
+
+
 export default function AlertsPage() {
   return (
     <AppLayout>
@@ -70,7 +84,7 @@ export default function AlertsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                     <Badge variant={village.alertStatus === 'Sent' ? 'default' : 'secondary'}>
+                     <Badge variant={getStatusBadgeVariant(village.alertStatus)}>
                       {village.alertStatus}
                     </Badge>
                   </TableCell>

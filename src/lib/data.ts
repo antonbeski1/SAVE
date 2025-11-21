@@ -27,7 +27,7 @@ export type EventLog = {
 
 export const eventLogs: EventLog[] = [
   { id: 'e001', timestamp: new Date('2024-07-21T14:30:00Z'), village: 'Riverside', hazard: 'Flood', riskScore: 0.85, alertSent: true },
-  { id: 'e002', timestamp: new date('2024-07-21T13:05:00Z'), village: 'Hillview', hazard: 'Landslide', riskScore: 0.65, alertSent: true },
+  { id: 'e002', timestamp: new Date('2024-07-21T13:05:00Z'), village: 'Hillview', hazard: 'Landslide', riskScore: 0.65, alertSent: true },
   { id: 'e003', timestamp: new Date('2024-07-21T11:00:00Z'), village: 'Laketown', hazard: 'Flood', riskScore: 0.92, alertSent: false },
   { id: 'e004', timestamp: new Date('2024-07-20T18:00:00Z'), village: 'Sunnyside', hazard: 'Heatwave', riskScore: 0.78, alertSent: true },
   { id: 'e005', timestamp: new Date('2024-07-20T16:45:00Z'), village: 'Mountain Base', hazard: 'Landslide', riskScore: 0.55, alertSent: true },
