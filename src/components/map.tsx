@@ -8,6 +8,7 @@ import { Card } from './ui/card';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays } from 'date-fns';
 
 const EONET_CATEGORY_COLORS: Record<string, string> = {
@@ -19,6 +20,19 @@ const EONET_CATEGORY_COLORS: Record<string, string> = {
   default: '#808080',
 };
 
+// As per plan step 1.1
+const GIBS_LAYERS = [
+    { id: 'MODIS_Terra_CorrectedReflectance_TrueColor', name: 'True Color (Terra)' },
+    { id: 'VIIRS_SNPP_CorrectedReflectance_TrueColor', name: 'True Color (VIIRS)' },
+    { id: 'MODIS_Terra_Land_Surface_Temp_Day', name: 'Land Surface Temp (Day)' },
+    { id: 'VIIRS_SNPP_DayNightBand_ENCC', name: 'Night Lights' },
+    { id: 'MODIS_Terra_Aerosol_Optical_Depth', name: 'Aerosol Optical Depth' },
+    { id: 'MODIS_Terra_Cloud_Top_Temperature_Day', name: 'Cloud Top Temperature' },
+    { id: 'MODIS_Terra_Water_Mask', name: 'Flood Water Mask (MODIS)' },
+    { id: 'VIIRS_SNPP_Flood_NRT', name: 'Flood Water NRT (VIIRS)'},
+    { id: 'MODIS_Terra_Active_Fires', name: 'Active Fires (MODIS)' },
+];
+
 function getEventCategoryColor(category: string): string {
   return EONET_CATEGORY_COLORS[category] || EONET_CATEGORY_COLORS['default'];
 }
@@ -28,7 +42,6 @@ interface MapProps {
   firmsEvents: FeatureCollection;
 }
 
-const GIBSTileLayer = 'MODIS_Terra_CorrectedReflectance_TrueColor';
 
 export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const mapContainer = React.useRef<HTMLDivElement>(null);
@@ -38,8 +51,11 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
   const [zoom] = React.useState(1.5);
   
   const markers = React.useRef<Marker[]>([]);
-  const [opacity, setOpacity] = React.useState(1);
+  const [opacity, setOpacity] = React.useState(0.8);
   const [selectedDate, setSelectedDate] = React.useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
+  const [selectedLayer, setSelectedLayer] = React.useState(GIBS_LAYERS[0].id);
+
+  const tileUrl = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${selectedLayer}/default/${selectedDate}/250m/{z}/{y}/{x}.jpg`;
 
   React.useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -64,9 +80,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     map.current.on('load', () => {
        map.current?.addSource('gibs-tiles', {
         type: 'raster',
-        tiles: [
-          `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${GIBSTileLayer}/default/${selectedDate}/250m/{z}/{y}/{x}.jpg`
-        ],
+        tiles: [tileUrl],
         tileSize: 256
       });
       map.current?.addLayer({
@@ -79,14 +93,14 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
       });
     });
 
-  }, [lng, lat, zoom, opacity, selectedDate]);
+  }, [lng, lat, zoom, opacity, selectedDate, tileUrl]);
 
   React.useEffect(() => {
     if (!map.current?.isStyleLoaded()) return;
 
     const gibsSource = map.current.getSource('gibs-tiles') as mapboxgl.RasterSource;
     if (gibsSource) {
-      gibsSource.setTiles([`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${GIBSTileLayer}/default/${selectedDate}/250m/{z}/{y}/{x}.jpg`]);
+      gibsSource.setTiles([tileUrl]);
       const gibsLayer = map.current.getLayer('gibs-layer');
       if (gibsLayer) {
         map.current.setPaintProperty('gibs-layer', 'raster-opacity', opacity);
@@ -101,7 +115,7 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
           });
       }
     }
-  }, [opacity, selectedDate]);
+  }, [opacity, selectedDate, selectedLayer, tileUrl]);
 
   React.useEffect(() => {
     if (!map.current || !eonetEvents || !firmsEvents) return;
@@ -165,13 +179,26 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     });
 
 
-  }, [eonetEvents, firmsEvents, opacity, selectedDate]);
+  }, [eonetEvents, firmsEvents, opacity, selectedDate, selectedLayer]);
 
   return (
     <div className="relative">
       <div ref={mapContainer} className="w-full h-[65vh] rounded-lg" />
       <Card className="absolute bottom-4 left-4 z-10 w-64 bg-background/80 backdrop-blur-sm p-4">
         <div className="space-y-4">
+            <div>
+              <Label htmlFor="layer-select" className="text-xs">Satellite Layer</Label>
+              <Select value={selectedLayer} onValueChange={setSelectedLayer}>
+                <SelectTrigger id="layer-select">
+                    <SelectValue placeholder="Select a layer" />
+                </SelectTrigger>
+                <SelectContent>
+                    {GIBS_LAYERS.map(layer => (
+                        <SelectItem key={layer.id} value={layer.id}>{layer.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="date-slider" className="text-xs">Satellite Date</Label>
               <Input 
@@ -198,3 +225,5 @@ export default function Map({ eonetEvents, firmsEvents }: MapProps) {
     </div>
   );
 }
+
+    
