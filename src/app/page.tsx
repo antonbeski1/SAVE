@@ -31,7 +31,7 @@ export default function LoginPage() {
               </div>
               <div className="flex gap-2">
                 <Input id="otp" required className="bg-transparent placeholder:text-gray-400"/>
-                <Button variant="outline">Send OTP</Button>
+                <Button variant="secondary" className="bg-white text-black hover:bg-gray-200 shadow-[0_0_8px_rgba(255,255,255,0.3)]">Send OTP</Button>
               </div>
             </div>
             <Link href="/dashboard" className="w-full">
