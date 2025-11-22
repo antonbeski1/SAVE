@@ -1,4 +1,4 @@
-# **App Name**: AlertWave
+# **App Name**: SAVE
 
 ## Core Features:
 
